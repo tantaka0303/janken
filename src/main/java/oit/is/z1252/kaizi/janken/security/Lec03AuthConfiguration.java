@@ -9,9 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/**
- * Lec03AuthConfiguration
- */
 @Configuration
 @EnableWebSecurity
 public class Lec03AuthConfiguration extends WebSecurityConfigurerAdapter {
@@ -22,10 +19,15 @@ public class Lec03AuthConfiguration extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 
-    auth.inMemoryAuthentication().withUser("user1")
-        .password("$2y$10$d8nU4IjAH0km6DbfYfgjMe2.NBwUIv8lXP1p4/tzsnYJlD8kMdIoa").roles("USER");
-    auth.inMemoryAuthentication().withUser("admin")
-        .password("$2y$10$HyEv7jcuGKBQfoEl1yrw1Oylq8ep/IdUatiG5VN5YZedIv6gABGgG").roles("USER");
+    // $ sshrun htpasswd -nbBC 10 user1 pAssw0rd
+    // $ sshrun htpasswd -nbBC 10 CPU 1
+    auth.inMemoryAuthentication().withUser("CPU")
+        .password("$2y$10$dOAs/YkkGbgW5ns6BW9Ws.ZJRE0zhLSAEV/8bG8hYVLiyaVPF0Gd2").roles("USER");// 1
+    // auth.inMemoryAuthentication().withUser("user2")
+    // .password("$2y$10$CoBya0jwf6ntXD5YLNh8BeZ4HogOZOLwgWRW7LIEs6DTzyA.YZAOO").roles("USER");//
+    // 2
+    auth.inMemoryAuthentication().withUser("ほんだ")
+        .password("$2y$10$n/fuvbIgRSsfeC.ZJMO/ue8CSgoIBIsx1B.yXRrhzM.Mkhp8fZud2").roles("USER");// 3
   }
 
   @Bean
@@ -42,10 +44,23 @@ public class Lec03AuthConfiguration extends WebSecurityConfigurerAdapter {
     // Spring Securityのフォームを利用してログインを行う
     http.formLogin();
 
+    // http://localhost:8000/sample3 で始まるURLへのアクセスはログインが必要
+    // antMatchers().authenticated がantMatchersへのアクセスに認証を行うことを示す
+    // antMatchers()の他にanyRequest()と書くとあらゆるアクセス先を表現できる
+    // authenticated()の代わりにpermitAll()と書くと認証処理が不要であることを示す
     http.authorizeRequests().antMatchers("/lec02/**").authenticated();
 
     // Spring Securityの機能を利用してログアウト．ログアウト時は http://localhost:8000/ に戻る
     http.logout().logoutSuccessUrl("/");
+
+    /**
+     * 以下2行はh2-consoleを利用するための設定なので，開発が完了したらコメントアウトすることが望ましい
+     * CSRFがONになっているとフォームが対応していないためアクセスできない
+     * HTTPヘッダのX-Frame-OptionsがDENYになるとiframeでlocalhostでのアプリが使えなくなるので，H2DBのWebクライアントのためだけにdisableにする必要がある
+     */
+    http.csrf().disable();
+    http.headers().frameOptions().disable();
+
   }
 
 }
