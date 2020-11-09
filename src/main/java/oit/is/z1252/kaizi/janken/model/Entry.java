@@ -38,4 +38,4 @@ public class Entry {
     this.users = users;
   }
 
-} 
+}
